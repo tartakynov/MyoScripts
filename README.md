@@ -1,3 +1,5 @@
+[![forthebadge](http://forthebadge.com/badges/gluten-free.svg)](http://forthebadge.com)
+
 MyoScripts
 ==========
 
