@@ -152,12 +152,12 @@ function onForegroundWindowChange(app, title)
          wantActive = string.match(title, "Mail %- Google Chrome$") or
                      string.match(title, "^Inbox") or
                      string.match(title, "%- Gmail %- Google Chrome$")
-        activeApp = "Gmail by Google"
+        activeApp = "Google Gmail"
     elseif platform == "Windows" then
         wantActive = string.match(title, "Mail %- Google Chrome$") or
                      string.match(title, "^Inbox") or
                      string.match(title, "%- Gmail %- Google Chrome$")
-        activeApp = "Webmail"
+        activeApp = "Google Gmail"
     end
     return wantActive
 end
