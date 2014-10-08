@@ -15,5 +15,6 @@ Quick gesture mappings for Gmail. You need to do two things to get this working 
 
 * Wave Left to archive
 * Wave Right to reply
-* Spread Fingers to reply all
+* Spread Fingers and wave down to reply all
+* Spread Fingers and wave up to return to conversation list
 * Fist to skip to next message
