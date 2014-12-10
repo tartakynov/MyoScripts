@@ -1,4 +1,8 @@
 scriptId = 'com.thalmic.scripts.gmail'
+minMyoConnectVersion = '0.7.0'
+scriptDetailsUrl = 'https://market.myo.com/app//547cdbbae4b06d0c583f4336'
+scriptTitle = 'Gmail Connector'
+
 
 -- Mappings
 -- https://support.google.com/mail/answer/6594?hl=en
@@ -7,10 +11,9 @@ scriptId = 'com.thalmic.scripts.gmail'
 -- Second, go to Settings > Labs and enable the "Auto-advance" tool
 
 -- Wave Left to Archive
--- Wave Right to Reply
+-- Wave Right to Reply All
 -- Fist to go to next message
--- Spread Fingers and release up to go back to conversation
--- Spread Fingers and release down to reply all
+-- Sp
 
 -- Effects
 
@@ -55,121 +58,63 @@ function conditionallySwapWave(pose)
     return pose
 end
 
--- Unlock mechanism
-
-function unlock()
-    enabled = true
-    extendUnlock()
-end
-
-function extendUnlock()
-    enabledSince = myo.getTimeMilliseconds()
-end
-
-
 -- Triggers
 
 function onPoseEdge(pose, edge)
-    if pose == "thumbToPinky" then
-        -- Pitch... 0.30750495195389
-        -- Yaw... 2.7852053642273
-        --myo.debug("Pitch... "..currentPitch)
-        --myo.debug("Yaw... "..currentYaw)
-        -- myo.debug("Roll... "..currentRoll)
-        if edge == "off" then
-            enabled = true
-            enabledSince = myo.getTimeMilliseconds()
-        elseif edge == "on" and not enabled then
-            -- Vibrate twice on unlock
-            myo.vibrate("short")
-            myo.vibrate("short")
-        end
-    end
-
-    if enabled then
-    --if enabled and edge == "on" then
-        pose = conditionallySwapWave(pose)
-
-        if pose == "waveOut" and edge == "on" then
-            myo.vibrate("short")
-            enabled = false
-            replyToOne()
-        end
-        if pose == "waveIn" and edge == "on" then
-            if currentYaw > 1.5 then
-               -- myo.debug('great than 1.5 '..currentYaw)
+     if pose == "waveIn" or pose == "waveOut" then
+        if edge == "on" then
+            pose = conditionallySwapWave(pose)
+            if pose == "waveIn" then
+                archiveConversation()
             else
-                --myo.debug('less than 1.5 '..currentYaw)
-            end
-            myo.vibrate("short")
-            enabled = false
-            archiveConversation()
-        end
-        if pose == "fist" and edge == "on" then
-            myo.vibrate("short")
-            enabled = false
-            nextOlderMessage()
-        end
-        if pose == "fingersSpread" then
-           -- myo.debug("hey.. "..currentYaw)
-            if edge == "off" and currentPitch < 0.1 then
-                myo.vibrate("medium")
-                enabled = true
                 replyToAll()
-            elseif edge == "off" and currentPitch > 0.2 then
-                myo.vibrate("short")
-                enabled = true
-                conversationScreen()
             end
+            -- Extend unlock and notify user
+            myo.unlock("timed")
+            myo.notifyUserAction()
         end
     end
-end
-
--- All timeouts in milliseconds
-ENABLED_TIMEOUT = 2200
-currentYaw = 0
-currentPitch = 0
-currentRoll = 0
-
-function onPeriodic()
-    currentYaw = myo.getYaw()
-    currentPitch = myo.getPitch()
-    currentRoll = myo.getRoll()
-    
-   if enabled then
-
-        if myo.getTimeMilliseconds() - enabledSince > ENABLED_TIMEOUT then
-            enabled = false
+    if pose == "fist" then
+        if edge == "on" then
+            nextOlderMessage()
+            -- Extend unlock and notify user
+            myo.unlock("timed")
+            myo.notifyUserAction()
+        end
+    end
+    if pose == "fingersSpread" then
+        if edge == "off" then
+            conversationScreen()
+            -- Extend unlock and notify user
+            myo.unlock("timed")
+            myo.notifyUserAction()
         end
     end
 end
 
 function onForegroundWindowChange(app, title)
-    --myo.debug(title)
-    local wantActive = false
-    activeApp = ""
     if platform == "MacOS" then
-         wantActive = string.match(title, "Mail %- Google Chrome$") or
-                     string.match(title, "^Inbox") or
-                     string.match(title, "%- Gmail %- Google Chrome$")
-        activeApp = "Google Gmail"
+        if (app == "com.apple.Safari" or
+            app == "com.google.Chrome" or
+            app == "org.mozilla.firefox") and
+                (string.match(title, "Mail %- Google Chrome$") or
+                string.match(title, "^Inbox") or
+                string.match(title, "%- Gmail %- Google Chrome$")) then
+            return true
+        end
     elseif platform == "Windows" then
-        wantActive = string.match(title, "Mail %- Google Chrome$") or
-                     string.match(title, "^Inbox") or
-                     string.match(title, "%- Gmail %- Google Chrome$")
-        activeApp = "Google Gmail"
+        if (app == "Safari.exe" or
+            app == "chrome.exe" or
+            app == "firefox.exe" or
+            app == "iexplore.exe") and
+                (string.match(title, "Mail %- Google Chrome$") or
+                string.match(title, "^Inbox") or
+                string.match(title, "%- Gmail %- Google Chrome$")) then
+            return true
+        end
     end
-    return wantActive
 end
 
 function activeAppName()
-    return activeApp
+    return "Gmail"
 end
-
-function onActiveChange(isActive)
-    if not isActive then
-        enabled = false
-    end
-end
-
-
