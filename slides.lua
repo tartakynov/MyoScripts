@@ -43,7 +43,7 @@ function onPoseEdge(pose, edge)
             myo.unlock("timed")
             myo.notifyUserAction()
         end
-    else
+    end
 end
 
 function onForegroundWindowChange(app, title)
